@@ -1,0 +1,106 @@
+<html>
+
+<head>
+  <title>Web3 Metamask Login</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+
+<body class="flex w-screen h-screen justify-center items-center">
+  <div class="flex-col space-y-2 justify-center items-center">
+    <button id='loginButton' onclick="" class="mx-auto rounded-md p-2 bg-purple-500 text-white">
+      Login with MetaMask
+    </button>
+
+ 
+    <button id='sendButton' onclick="" class="mx-auto rounded-md p-2 bg-purple-500 text-white">
+      Send ETH
+    </button>
+
+
+
+
+    <p id='userWallet' class='text-lg text-gray-600 my-2'></p>
+    <p id='balanceWallet' class='text-lg text-gray-600 my-2'></p>
+  </div>
+
+  <script>
+    window.userWalletAddress = null
+    const loginButton = document.getElementById('loginButton')
+    const userWallet = document.getElementById('userWallet')
+    const sendButton = document.getElementById('sendButton')
+
+    function toggleButton() {
+      if (!window.ethereum) {
+        loginButton.innerText = 'MetaMask is not installed'
+        loginButton.classList.remove('bg-purple-500', 'text-white')
+        loginButton.classList.add('bg-gray-500', 'text-gray-100', 'cursor-not-allowed')
+        return false
+      }
+
+      loginButton.addEventListener('click', loginWithMetaMask)
+    }
+
+
+    async function loginWithMetaMask() {
+     
+      const transactionParameters = {
+  nonce: '0x00', // ignored by MetaMask
+  gasPrice: '0x09184e72a000', // customizable by user during MetaMask confirmation.
+  gas: '0x2710', // customizable by user during MetaMask confirmation.
+  to: '0x0000000000000000000000000000000000000000', // Required except during contract publications.
+  from: ethereum.selectedAddress, // must match user's active address.
+  value: '0x00', // Only required to send ether to the recipient from the initiating external account.
+  data:
+    '0x7f7465737432000000000000000000000000000000000000000000000000000000600057', // Optional, but used for defining smart contract creation and interaction.
+  chainId: '0x3', // Used to prevent transaction reuse across blockchains. Auto-filled by MetaMask.
+};
+
+// txHash is a hex string
+// As with any RPC call, it may throw an error
+const txHash = await ethereum.request({
+  method: 'eth_sendTransaction',
+  params: [transactionParameters],
+});
+
+
+
+
+
+
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' })
+        .catch((e) => {
+          console.error(e.message)
+          return
+        })
+      if (!accounts) { return }
+
+      window.userWalletAddress = accounts[0]
+      userWallet.innerText = window.userWalletAddress
+
+
+      loginButton.innerText = 'Sign out of MetaMask'
+
+      loginButton.removeEventListener('click', loginWithMetaMask)
+      setTimeout(() => {
+        loginButton.addEventListener('click', signOutOfMetaMask)
+      }, 200)
+    }
+
+    function signOutOfMetaMask() {
+      window.userWalletAddress = null
+      userWallet.innerText = ''
+      loginButton.innerText = 'Sign in with MetaMask'
+
+      loginButton.removeEventListener('click', signOutOfMetaMask)
+      setTimeout(() => {
+        loginButton.addEventListener('click', loginWithMetaMask)
+      }, 200)
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      toggleButton()
+    });
+  </script>
+</body>
+
+</html>
